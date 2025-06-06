@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Layout/Navbar";
 import HeroSection from "@/components/Home/HeroSection";
 import ThreatCategories from "@/components/Home/ThreatCategories";
-import SecurityAdvisories from "@/components/Home/SecurityAdvisories";
+import CyberAttacksSection from "@/components/Home/CyberAttacksSection";
 import ResourcesSection from "@/components/Home/ResourcesSection";
 import Footer from "@/components/Home/Footer";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { ArrowRight, Brain } from "lucide-react";
 const Index = () => {
   // Update the page title
   useEffect(() => {
-    document.title = "CyberShield | Cybersecurity Information Center";
+    document.title = "CyberShield | Cybersecurity Information Centre";
   }, []);
 
   return (
@@ -22,7 +22,7 @@ const Index = () => {
       <main className="flex-grow">
         <HeroSection />
         <ThreatCategories />
-        <SecurityAdvisories />
+        <CyberAttacksSection />
         <ResourcesSection />
         
         {/* AI Threat Detector CTA Section */}
@@ -36,7 +36,7 @@ const Index = () => {
                 AI-Powered Threat Detection
               </h2>
               <p className="text-lg text-muted-foreground mb-8 max-w-3xl mx-auto">
-                Our advanced AI model can analyze URLs, file hashes, or suspicious text to identify 
+                Our advanced AI model can analyse URLs, file hashes, or suspicious text to identify 
                 potential cybersecurity threats and provide real-time security insights.
               </p>
               <Button className="bg-cyber-teal hover:bg-cyber-teal/90 text-lg px-6 py-6 h-auto" asChild>

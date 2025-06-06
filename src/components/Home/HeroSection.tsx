@@ -1,8 +1,7 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Lock, Shield, ShieldAlert, AlertCircle, TrendingUp, Globe } from "lucide-react";
+import { ChevronRight, Lock, Shield, ShieldAlert, TrendingUp, Globe, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
-import AlertBanner from "../common/AlertBanner";
 
 export default function HeroSection() {
   return (
@@ -10,12 +9,6 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-cyber-blue/5 -z-10"></div>
       <div className="container px-4 sm:px-6 grid lg:grid-cols-2 gap-12 items-centre">
         <div className="space-y-6">
-          <AlertBanner 
-            title="Security Advisory" 
-            message="Critical vulnerability discovered in popular software. Update immediately."
-            severity="critical"
-          />
-          
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
             Safeguarding the <span className="text-cyber-teal">Digital Frontier</span>
           </h1>
@@ -42,7 +35,7 @@ export default function HeroSection() {
           <div className="flex items-centre gap-6 pt-4">
             <div className="flex items-centre">
               <Shield className="text-cyber-teal h-5 w-5 mr-2" />
-              <span className="text-sm font-medium">Real-time Alerts</span>
+              <span className="text-sm font-medium">Real-time Intelligence</span>
             </div>
             <div className="flex items-centre">
               <ShieldAlert className="text-cyber-teal h-5 w-5 mr-2" />
@@ -58,6 +51,7 @@ export default function HeroSection() {
               <div className="flex justify-between items-centre">
                 <h3 className="font-mono text-sm font-semibold">Global Threat Intelligence Dashboard</h3>
                 <span className="inline-flex items-centre rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                  <Activity className="h-3 w-3 mr-1" />
                   Live Monitoring
                 </span>
               </div>
@@ -65,11 +59,11 @@ export default function HeroSection() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3">
                   <div className="flex items-centre justify-between mb-2">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <ShieldAlert className="h-4 w-4 text-red-600" />
                     <span className="text-xs font-medium text-red-600">Critical</span>
                   </div>
                   <div className="text-2xl font-bold text-red-600">23</div>
-                  <div className="text-xs text-muted-foreground">Active threats</div>
+                  <div className="text-xs text-muted-foreground">Active threats today</div>
                 </div>
                 
                 <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
@@ -115,7 +109,7 @@ export default function HeroSection() {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex items-centre justify-between">
                   <span className="font-mono text-xs text-muted-foreground">Latest Scan:</span>
-                  <span className="font-mono text-xs">21/05/2025 14:23:47</span>
+                  <span className="font-mono text-xs">06/06/2025 14:23:47</span>
                 </div>
                 <div className="flex items-centre justify-between">
                   <span className="font-mono text-xs text-muted-foreground">Threats Neutralised:</span>

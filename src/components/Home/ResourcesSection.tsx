@@ -1,7 +1,7 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, FileText, PenTool, Play, Shield, CheckCircle2, AlertTriangle } from "lucide-react";
+import { ArrowRight, BookOpen, FileText, PenTool, Play, Shield, CheckCircle2, AlertTriangle, Download, ExternalLink } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -19,9 +19,16 @@ interface ResourceCardProps {
   href: string;
   className?: string;
   iconClassName?: string;
+  isExternal?: boolean;
 }
 
-function ResourceCard({ icon, title, description, href, className, iconClassName }: ResourceCardProps) {
+function ResourceCard({ icon, title, description, href, className, iconClassName, isExternal = false }: ResourceCardProps) {
+  const linkProps = isExternal 
+    ? { href, target: "_blank", rel: "noopener noreferrer" }
+    : { to: href };
+  
+  const LinkComponent = isExternal ? "a" : Link;
+
   return (
     <Card className={cn("overflow-hidden transition-all hover:shadow-md", className)}>
       <CardHeader>
@@ -32,14 +39,14 @@ function ResourceCard({ icon, title, description, href, className, iconClassName
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="text-sm text-muted-foreground">
-        Learn essential cybersecurity concepts and best practises.
+        Access comprehensive cybersecurity resources and practical tools.
       </CardContent>
       <CardFooter>
         <Button variant="ghost" className="p-0 h-auto" asChild>
-          <Link to={href} className="inline-flex items-centre text-primary hover:underline">
+          <LinkComponent {...linkProps} className="inline-flex items-centre text-primary hover:underline">
             Explore resource
-            <ArrowRight className="ml-1 h-3 w-3" />
-          </Link>
+            {isExternal ? <ExternalLink className="ml-1 h-3 w-3" /> : <ArrowRight className="ml-1 h-3 w-3" />}
+          </LinkComponent>
         </Button>
       </CardFooter>
     </Card>
@@ -72,15 +79,16 @@ export default function ResourcesSection() {
             icon={<Play className="h-5 w-5 text-red-600" />}
             title="Video Tutorials"
             description="Visual demonstrations of security concepts"
-            href="/resources"
+            href="https://www.youtube.com/playlist?list=PLBf0hzazHTGOepimcP15eS6Y-aR4m6ql6"
             iconClassName="bg-red-100 dark:bg-red-900/30"
+            isExternal={true}
           />
           
           <ResourceCard
             icon={<FileText className="h-5 w-5 text-blue-600" />}
-            title="Whitepapers"
+            title="Security Whitepapers"
             description="In-depth technical research and analysis"
-            href="/advisories"
+            href="/resources#whitepapers"
             iconClassName="bg-blue-100 dark:bg-blue-900/30"
           />
           
@@ -121,7 +129,7 @@ export default function ResourcesSection() {
             </div>
             
             <div className="bg-white/10 rounded-lg p-4 text-centre">
-              <FileText className="h-6 w-6 text-white mx-auto mb-2" />
+              <Download className="h-6 w-6 text-white mx-auto mb-2" />
               <h4 className="font-medium text-white mb-1">Custom Report</h4>
               <p className="text-white/80 text-sm">Receive detailed recommendations</p>
             </div>
