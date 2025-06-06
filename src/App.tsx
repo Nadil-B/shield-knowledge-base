@@ -10,7 +10,7 @@ import ThreatIntelligence from "./pages/ThreatIntelligence";
 import SecuritySolutions from "./pages/SecuritySolutions";
 import Advisories from "./pages/Advisories";
 import Resources from "./pages/Resources";
-import ThreatDetector from "./pages/ThreatDetector";
+import SecurityAssessments from "./pages/SecurityAssessments";
 
 const queryClient = new QueryClient();
 
@@ -26,7 +26,7 @@ const App = () => (
           <Route path="/security-solutions" element={<SecuritySolutions />} />
           <Route path="/advisories" element={<Advisories />} />
           <Route path="/resources" element={<Resources />} />
-          <Route path="/threat-detector" element={<ThreatDetector />} />
+          <Route path="/security-assessments" element={<SecurityAssessments />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
