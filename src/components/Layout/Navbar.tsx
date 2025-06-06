@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -10,27 +11,27 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Menu, X, Shield, Lock, AlertCircle, HelpCircle } from "lucide-react";
+import { Menu, X, Shield, Brain } from "lucide-react";
 
 const threatItems = [
   {
     title: "Malware Analysis",
-    href: "#",
+    href: "/threat-intelligence#malware",
     description: "Learn about different types of malware and how to identify them."
   },
   {
     title: "Phishing Attacks",
-    href: "#",
+    href: "/threat-intelligence#phishing",
     description: "Understand phishing techniques and how to protect against them."
   },
   {
     title: "Ransomware",
-    href: "#",
+    href: "/threat-intelligence#ransomware",
     description: "Learn about ransomware attacks and preventative measures."
   },
   {
     title: "Advanced Persistent Threats",
-    href: "#",
+    href: "/threat-intelligence#apt",
     description: "Understand sophisticated, targeted cyber attacks."
   }
 ];
@@ -38,22 +39,22 @@ const threatItems = [
 const solutionItems = [
   {
     title: "Security Best Practices",
-    href: "#",
+    href: "/security-solutions#best-practices",
     description: "Essential security measures for individuals and organizations."
   },
   {
     title: "Incident Response",
-    href: "#",
+    href: "/security-solutions#incident-response",
     description: "How to respond to and recover from security incidents."
   },
   {
     title: "Security Tools",
-    href: "#",
+    href: "/security-solutions#tools",
     description: "Overview of security tools and technologies for protection."
   },
   {
     title: "Training Resources",
-    href: "#",
+    href: "/security-solutions#training",
     description: "Educational resources to improve security awareness."
   }
 ];
@@ -62,8 +63,8 @@ const ListItem = ({ className, title, href, children }: any) => {
   return (
     <li>
       <NavigationMenuLink asChild>
-        <a
-          href={href}
+        <Link
+          to={href}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className
@@ -73,7 +74,7 @@ const ListItem = ({ className, title, href, children }: any) => {
           <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
             {children}
           </p>
-        </a>
+        </Link>
       </NavigationMenuLink>
     </li>
   );
@@ -86,10 +87,10 @@ export default function Navbar() {
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex">
-          <a href="/" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <Shield className="h-6 w-6 text-cyber-teal" />
             <span className="font-bold text-xl">CyberShield</span>
-          </a>
+          </Link>
         </div>
         
         <div className="hidden md:flex flex-1 items-center justify-between">
@@ -121,29 +122,27 @@ export default function Navbar() {
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <a href="#advisories" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                  <Link to="/advisories" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
                     Advisories
-                  </a>
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
               <NavigationMenuItem>
                 <NavigationMenuLink asChild>
-                  <a href="#resources" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                  <Link to="/resources" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
                     Resources
-                  </a>
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
           
-          <div className="flex items-center space-x-4">
-            <Button variant="outline">
-              <HelpCircle className="h-4 w-4 mr-2" />
-              Help Center
-            </Button>
-            <Button className="bg-cyber-teal hover:bg-cyber-teal/90">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Report Incident
+          <div className="flex items-center">
+            <Button className="bg-cyber-teal hover:bg-cyber-teal/90" asChild>
+              <Link to="/threat-detector">
+                <Brain className="h-4 w-4 mr-2" />
+                AI Threat Detector
+              </Link>
             </Button>
           </div>
         </div>
@@ -167,9 +166,9 @@ export default function Navbar() {
                   <p className="font-medium mb-2">Threat Intelligence</p>
                   <div className="pl-2 flex flex-col space-y-2">
                     {threatItems.map((item) => (
-                      <a key={item.title} href={item.href} className="text-sm text-muted-foreground hover:text-foreground">
+                      <Link key={item.title} to={item.href} className="text-sm text-muted-foreground hover:text-foreground">
                         {item.title}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -177,22 +176,20 @@ export default function Navbar() {
                   <p className="font-medium mb-2">Security Solutions</p>
                   <div className="pl-2 flex flex-col space-y-2">
                     {solutionItems.map((item) => (
-                      <a key={item.title} href={item.href} className="text-sm text-muted-foreground hover:text-foreground">
+                      <Link key={item.title} to={item.href} className="text-sm text-muted-foreground hover:text-foreground">
                         {item.title}
-                      </a>
+                      </Link>
                     ))}
                   </div>
                 </div>
-                <a href="#advisories" className="font-medium">Advisories</a>
-                <a href="#resources" className="font-medium">Resources</a>
-                <div className="pt-2 flex flex-col space-y-2">
-                  <Button variant="outline" className="justify-start">
-                    <HelpCircle className="h-4 w-4 mr-2" />
-                    Help Center
-                  </Button>
-                  <Button className="bg-cyber-teal hover:bg-cyber-teal/90 justify-start">
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    Report Incident
+                <Link to="/advisories" className="font-medium">Advisories</Link>
+                <Link to="/resources" className="font-medium">Resources</Link>
+                <div className="pt-2">
+                  <Button className="bg-cyber-teal hover:bg-cyber-teal/90 w-full justify-start" asChild>
+                    <Link to="/threat-detector">
+                      <Brain className="h-4 w-4 mr-2" />
+                      AI Threat Detector
+                    </Link>
                   </Button>
                 </div>
               </nav>
