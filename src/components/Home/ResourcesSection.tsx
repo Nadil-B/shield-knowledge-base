@@ -1,7 +1,7 @@
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, FileText, Play, Shield, CheckCircle2, Download, Brain, Users, GraduationCap } from "lucide-react";
+import { ArrowRight, BookOpen, FileText, Shield, CheckCircle2, Brain, Users, TrendingDown, PoundSterling, AlertTriangle, Scale } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 interface ResourceCardProps {
   icon: React.ReactNode;
@@ -72,10 +73,9 @@ interface GuideCardProps {
   duration: string;
   topics: string[];
   href: string;
-  isVideo?: boolean;
 }
 
-function GuideCard({ title, description, level, duration, topics, href, isVideo = false }: GuideCardProps) {
+function GuideCard({ title, description, level, duration, topics, href }: GuideCardProps) {
   const getLevelColour = (level: string) => {
     switch (level) {
       case "Beginner": return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
@@ -90,11 +90,7 @@ function GuideCard({ title, description, level, duration, topics, href, isVideo 
       <CardHeader>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            {isVideo ? (
-              <Play className="h-5 w-5 text-red-500" />
-            ) : (
-              <BookOpen className="h-5 w-5 text-blue-500" />
-            )}
+            <BookOpen className="h-5 w-5 text-blue-500" />
             <span className={cn("text-xs px-2 py-1 rounded-full font-medium", getLevelColour(level))}>
               {level}
             </span>
@@ -123,11 +119,46 @@ function GuideCard({ title, description, level, duration, topics, href, isVideo 
       <CardFooter>
         <Button variant="outline" className="w-full" asChild>
           <a href={href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center">
-            {isVideo ? "Watch Video" : "Read Guide"}
+            Read Guide
             <ArrowRight className="ml-2 h-3 w-3" />
           </a>
         </Button>
       </CardFooter>
+    </Card>
+  );
+}
+
+interface CyberCostData {
+  category: string;
+  averageCost: string;
+  description: string;
+  regulation?: string;
+  icon: React.ReactNode;
+}
+
+function CyberCostCard({ category, averageCost, description, regulation, icon }: CyberCostData) {
+  return (
+    <Card className="h-full hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="bg-red-100 dark:bg-red-900/30 rounded-full p-2">
+            {icon}
+          </div>
+          <CardTitle className="text-lg">{category}</CardTitle>
+        </div>
+        <div className="flex items-center gap-2">
+          <PoundSterling className="h-5 w-5 text-red-600" />
+          <span className="text-2xl font-bold text-red-600">{averageCost}</span>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className="text-sm text-muted-foreground mb-3">{description}</p>
+        {regulation && (
+          <Badge variant="outline" className="text-xs border-red-200 text-red-700">
+            {regulation}
+          </Badge>
+        )}
+      </CardContent>
     </Card>
   );
 }
@@ -190,63 +221,48 @@ export default function ResourcesSection() {
     }
   ];
 
-  const videoGuides: GuideCardProps[] = [
+  const cyberCostData: CyberCostData[] = [
     {
-      title: "Cybersecurity Awareness Training",
-      description: "Interactive video series covering essential security awareness topics.",
-      level: "Beginner",
-      duration: "20 min video",
-      topics: [
-        "Phishing email identification",
-        "Social engineering tactics",
-        "Secure password creation",
-        "Safe remote working practices"
-      ],
-      href: "https://www.youtube.com/watch?v=inWWhr5tnEA",
-      isVideo: true
+      category: "Data Breach",
+      averageCost: "3.9M",
+      description: "Average cost of a data breach for UK companies, including regulatory fines, remediation, and business disruption.",
+      regulation: "GDPR Article 83",
+      icon: <Shield className="h-6 w-6 text-red-600" />
     },
     {
-      title: "Incident Response Procedures",
-      description: "Step-by-step guide to handling cybersecurity incidents effectively.",
-      level: "Advanced",
-      duration: "35 min video",
-      topics: [
-        "Incident classification",
-        "Response team coordination",
-        "Evidence preservation",
-        "Recovery procedures",
-        "Post-incident analysis"
-      ],
-      href: "https://www.youtube.com/watch?v=nvTk-dHVN9Q",
-      isVideo: true
+      category: "Ransomware Attack",
+      averageCost: "1.8M",
+      description: "Average recovery cost from ransomware, including downtime, data recovery, and ransom payments.",
+      regulation: "NIS Directive",
+      icon: <AlertTriangle className="h-6 w-6 text-red-600" />
     },
     {
-      title: "Penetration Testing Basics",
-      description: "Introduction to ethical hacking and vulnerability assessment techniques.",
-      level: "Advanced",
-      duration: "50 min video",
-      topics: [
-        "Reconnaissance techniques",
-        "Vulnerability scanning",
-        "Exploitation methods",
-        "Report writing"
-      ],
-      href: "https://www.youtube.com/watch?v=3Kq1MIfTWCE",
-      isVideo: true
+      category: "Business Email Compromise",
+      averageCost: "4.3M",
+      description: "Average financial loss from BEC attacks targeting UK businesses, often involving fraudulent transfers.",
+      regulation: "PCI DSS",
+      icon: <TrendingDown className="h-6 w-6 text-red-600" />
     },
     {
-      title: "Cloud Security Best Practices",
-      description: "Securing cloud environments and understanding shared responsibility models.",
-      level: "Intermediate",
-      duration: "30 min video",
-      topics: [
-        "Cloud access controls",
-        "Data encryption in transit",
-        "Container security",
-        "Monitoring and logging"
-      ],
-      href: "https://www.youtube.com/watch?v=aISWoPf_XNE",
-      isVideo: true
+      category: "GDPR Non-Compliance",
+      averageCost: "20M",
+      description: "Maximum GDPR fine of €20M or 4% of annual turnover for serious data protection violations.",
+      regulation: "GDPR Article 83(5)",
+      icon: <Scale className="h-6 w-6 text-red-600" />
+    },
+    {
+      category: "Critical Infrastructure",
+      averageCost: "12.4M",
+      description: "Average cost for critical infrastructure cyber incidents under the NIS Regulations.",
+      regulation: "NIS Regulations 2018",
+      icon: <AlertTriangle className="h-6 w-6 text-red-600" />
+    },
+    {
+      category: "Insider Threats",
+      averageCost: "8.76M",
+      description: "Average cost of insider-related incidents, including malicious and negligent insider actions.",
+      regulation: "UK GDPR",
+      icon: <Users className="h-6 w-6 text-red-600" />
     }
   ];
 
@@ -258,7 +274,7 @@ export default function ResourcesSection() {
             Cybersecurity Resources
           </h2>
           <p className="text-lg text-muted-foreground">
-            Educational materials and tools to enhance your security posture and build awareness.
+            Educational materials and financial impact data to enhance your security posture and awareness.
           </p>
         </div>
         
@@ -273,10 +289,10 @@ export default function ResourcesSection() {
           />
           
           <ResourceCard
-            icon={<Play className="h-5 w-5 text-white" />}
-            title="Video Tutorials"
-            description="Visual demonstrations of security concepts"
-            href="#video-guides"
+            icon={<TrendingDown className="h-5 w-5 text-white" />}
+            title="Financial Impact Data"
+            description="Real costs of cyber attacks on UK/EU businesses"
+            href="#cyber-costs"
             iconClassName="bg-gradient-to-r from-red-500 to-orange-500"
             className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/30 dark:to-orange-900/30"
           />
@@ -293,8 +309,8 @@ export default function ResourcesSection() {
           
           <ResourceCard
             icon={<Brain className="h-5 w-5 text-white" />}
-            title="AI Assistant & Quiz"
-            description="Interactive AI guidance and knowledge testing"
+            title="Security Dashboard"
+            description="Personal security tools and incident reporting"
             href="/security-assessments"
             iconClassName="bg-gradient-to-r from-green-500 to-emerald-500"
             className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30"
@@ -320,22 +336,38 @@ export default function ResourcesSection() {
           </div>
         </section>
 
-        {/* Video Guides Section */}
-        <section id="video-guides" className="mb-12">
+        {/* Cyber Attack Financial Impact Section */}
+        <section id="cyber-costs" className="mb-12">
           <div className="text-center mb-8">
             <div className="inline-block mb-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
-              <Play className="h-8 w-8 text-red-600" />
+              <PoundSterling className="h-8 w-8 text-red-600" />
             </div>
-            <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">Video Tutorials</h3>
+            <h3 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">Financial Impact of Cyber Attacks</h3>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Visual learning experiences with step-by-step demonstrations of cybersecurity concepts, tools, and best practices.
+              Real-world costs that UK and EU businesses face from cyber incidents, including regulatory fines and recovery expenses.
             </p>
           </div>
           
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
-            {videoGuides.map((guide, index) => (
-              <GuideCard key={index} {...guide} />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {cyberCostData.map((data, index) => (
+              <CyberCostCard key={index} {...data} />
             ))}
+          </div>
+          
+          <div className="mt-8 p-6 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-amber-600 mt-1 flex-shrink-0" />
+              <div>
+                <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">
+                  UK/EU Regulatory Framework
+                </h4>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  These figures reflect average costs under current UK GDPR, NIS Regulations 2018, and EU directives. 
+                  Costs include direct financial losses, regulatory fines, remediation expenses, and business disruption. 
+                  Small businesses may face proportionally lower absolute costs but similar percentage impacts on revenue.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
         
@@ -345,37 +377,37 @@ export default function ResourcesSection() {
               <Shield className="h-8 w-8 text-white" />
             </div>
             <h3 className="text-2xl font-semibold mb-2 text-white">
-              Advanced Security Knowledge Hub
+              Advanced Security Dashboard
             </h3>
             <p className="text-white/90 max-w-2xl mx-auto">
-              Access our AI-powered assistant for expert cybersecurity guidance and test your knowledge with our comprehensive quiz system.
+              Access our comprehensive security dashboard with personal checklists, password health checking, and incident reporting tools.
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-              <Brain className="h-6 w-6 text-white mx-auto mb-2" />
-              <h4 className="font-medium text-white mb-1">AI Expert Guidance</h4>
-              <p className="text-white/80 text-sm">Get instant answers to cybersecurity questions</p>
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
               <CheckCircle2 className="h-6 w-6 text-white mx-auto mb-2" />
-              <h4 className="font-medium text-white mb-1">Knowledge Testing</h4>
-              <p className="text-white/80 text-sm">10-point quiz with detailed explanations</p>
+              <h4 className="font-medium text-white mb-1">Security Checklist</h4>
+              <p className="text-white/80 text-sm">Personal security assessment tools</p>
             </div>
             
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
-              <Users className="h-6 w-6 text-white mx-auto mb-2" />
-              <h4 className="font-medium text-white mb-1">Community Learning</h4>
-              <p className="text-white/80 text-sm">Connect with security professionals</p>
+              <Shield className="h-6 w-6 text-white mx-auto mb-2" />
+              <h4 className="font-medium text-white mb-1">Password Health</h4>
+              <p className="text-white/80 text-sm">Real-time password strength analysis</p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center">
+              <FileText className="h-6 w-6 text-white mx-auto mb-2" />
+              <h4 className="font-medium text-white mb-1">Incident Reporting</h4>
+              <p className="text-white/80 text-sm">Quick security incident reporting</p>
             </div>
           </div>
           
           <div className="text-center">
             <Button className="bg-white text-purple-600 hover:bg-white/90 shadow-lg" asChild>
               <Link to="/security-assessments">
-                Start Learning Journey
+                Access Security Dashboard
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
