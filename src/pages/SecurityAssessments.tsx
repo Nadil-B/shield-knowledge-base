@@ -4,6 +4,7 @@ import Navbar from "@/components/Layout/Navbar";
 import Footer from "@/components/Home/Footer";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { 
   Card, 
   CardContent, 
@@ -24,423 +25,458 @@ import {
   Brain,
   Target,
   Eye,
-  XCircle
+  XCircle,
+  MessageSquare,
+  Bot,
+  User
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
+import { Link } from "react-router-dom";
+
+interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+}
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+const quizQuestions: QuizQuestion[] = [
+  {
+    id: 1,
+    question: "What is the most common type of cyber attack targeting individuals?",
+    options: ["SQL Injection", "Phishing", "DDoS Attack", "Buffer Overflow"],
+    correctAnswer: 1,
+    explanation: "Phishing attacks are the most common, targeting individuals through deceptive emails and websites to steal credentials."
+  },
+  {
+    id: 2,
+    question: "Which password practice is most secure?",
+    options: ["Using the same password everywhere", "Writing passwords on sticky notes", "Using a unique, complex password for each account", "Sharing passwords with trusted friends"],
+    correctAnswer: 2,
+    explanation: "Using unique, complex passwords for each account prevents credential stuffing attacks and limits damage if one account is compromised."
+  },
+  {
+    id: 3,
+    question: "What does 'HTTPS' indicate about a website?",
+    options: ["It's faster than HTTP", "It's encrypted and more secure", "It's hosted on a government server", "It's free to use"],
+    correctAnswer: 1,
+    explanation: "HTTPS encrypts data transmission between your browser and the website, protecting sensitive information from interception."
+  },
+  {
+    id: 4,
+    question: "What is two-factor authentication (2FA)?",
+    options: ["Using two different passwords", "An additional security layer requiring a second verification method", "Having two user accounts", "Logging in twice"],
+    correctAnswer: 1,
+    explanation: "2FA adds an extra security layer by requiring something you know (password) and something you have (phone, token, etc.)."
+  },
+  {
+    id: 5,
+    question: "What should you do if you receive a suspicious email attachment?",
+    options: ["Open it to see what it contains", "Forward it to friends for verification", "Don't open it and report it as spam", "Download it but don't run it"],
+    correctAnswer: 2,
+    explanation: "Never open suspicious attachments. They often contain malware. Report them as spam and delete the email."
+  },
+  {
+    id: 6,
+    question: "What is a VPN primarily used for?",
+    options: ["Making internet faster", "Creating secure, encrypted connections over public networks", "Blocking all advertisements", "Increasing download speeds"],
+    correctAnswer: 1,
+    explanation: "VPNs create encrypted tunnels for your internet traffic, protecting your data on public Wi-Fi and masking your location."
+  },
+  {
+    id: 7,
+    question: "What is social engineering in cybersecurity?",
+    options: ["Building social media platforms", "Manipulating people to reveal confidential information", "Engineering social networks", "Creating user interfaces"],
+    correctAnswer: 1,
+    explanation: "Social engineering exploits human psychology to trick people into revealing sensitive information or performing actions that compromise security."
+  },
+  {
+    id: 8,
+    question: "How often should you update your software and operating system?",
+    options: ["Once a year", "Only when it stops working", "As soon as updates are available", "Never, updates can break things"],
+    correctAnswer: 2,
+    explanation: "Regular updates patch security vulnerabilities. Enable automatic updates when possible to stay protected against the latest threats."
+  },
+  {
+    id: 9,
+    question: "What is malware?",
+    options: ["Poorly written software", "Malicious software designed to harm or exploit devices", "Software that's hard to use", "Expensive software"],
+    correctAnswer: 1,
+    explanation: "Malware is malicious software including viruses, trojans, ransomware, and spyware designed to damage, steal data, or gain unauthorized access."
+  },
+  {
+    id: 10,
+    question: "What's the safest way to connect to public Wi-Fi?",
+    options: ["Connect directly without any protection", "Use a VPN for all internet activity", "Only check email", "Turn off your firewall"],
+    correctAnswer: 1,
+    explanation: "Always use a VPN on public Wi-Fi to encrypt your data. Avoid accessing sensitive accounts and consider using your mobile hotspot instead."
+  }
+];
 
 const SecurityAssessments = () => {
-  const [query, setQuery] = useState("");
-  const [analysis, setAnalysis] = useState<null | {
-    isThreat: boolean;
-    confidence: number;
-    threatTypes: string[];
-    riskLevel: "low" | "medium" | "high" | "critical";
-    explanation: string;
-    detectedIndicators: string[];
-    recommendations: string[];
-    scanTime: string;
-  }>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [assessmentType, setAssessmentType] = useState<"threat-analysis" | "knowledge-test">("threat-analysis");
+  const [activeTab, setActiveTab] = useState<"ai-chat" | "quiz">("ai-chat");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: "1",
+      text: "Hello! I'm your advanced cybersecurity AI assistant. I can help you with threat analysis, security best practices, vulnerability assessments, incident response guidance, and much more. What would you like to know about cybersecurity?",
+      isUser: false,
+      timestamp: new Date()
+    }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  
+  // Quiz state
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [quizStarted, setQuizStarted] = useState(false);
+
   const { toast } = useToast();
 
-  // Update the page title
   useEffect(() => {
-    document.title = "CyberShield | Security Assessments";
+    document.title = "CyberShield | AI Assistant & Security Quiz";
   }, []);
 
-  const handleThreatAnalysis = (e: React.FormEvent) => {
+  const handleChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      text: chatInput,
+      isUser: true,
+      timestamp: new Date()
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatInput("");
+    setIsThinking(true);
+
+    // Simulate AI processing
+    setTimeout(() => {
+      const aiResponse = generateAIResponse(chatInput);
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        text: aiResponse,
+        isUser: false,
+        timestamp: new Date()
+      };
+      setChatMessages(prev => [...prev, aiMessage]);
+      setIsThinking(false);
+    }, 1500 + Math.random() * 2000);
+  };
+
+  const generateAIResponse = (input: string): string => {
+    const lowerInput = input.toLowerCase();
     
-    if (!query.trim()) {
-      toast({
-        title: "Input required",
-        description: "Please enter content to analyse for threats",
-        variant: "destructive"
-      });
-      return;
+    if (lowerInput.includes("password")) {
+      return "Password security is crucial! Here are my recommendations: Use unique, complex passwords for each account (12+ characters with mixed case, numbers, and symbols). Enable two-factor authentication wherever possible. Consider using a password manager like Bitwarden or 1Password. Avoid common patterns and personal information. Would you like specific guidance on creating strong passwords or setting up a password manager?";
     }
     
-    setIsAnalyzing(true);
-    setProgress(0);
+    if (lowerInput.includes("phishing")) {
+      return "Phishing attacks are increasingly sophisticated. Key warning signs include: urgent language, suspicious sender addresses, unexpected attachments, requests for personal information, and mismatched URLs. Always verify requests through official channels. Hover over links to check destinations. Report suspicious emails to your IT department. Modern phishing includes vishing (voice), smishing (SMS), and deepfake attacks. What specific phishing concerns do you have?";
+    }
     
-    // Simulate analysis progress
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 150);
+    if (lowerInput.includes("malware") || lowerInput.includes("virus")) {
+      return "Malware protection requires a multi-layered approach: Keep your OS and software updated, use reputable antivirus with real-time protection, avoid suspicious downloads and email attachments, use ad blockers, and regularly backup your data. Common malware types include ransomware, trojans, spyware, and rootkits. Each requires different prevention strategies. Are you dealing with a specific malware threat?";
+    }
     
-    // Simulate ChatGPT analysis
-    setTimeout(() => {
-      clearInterval(progressInterval);
-      setProgress(100);
-      
-      // Enhanced threat detection logic
-      const lowerQuery = query.toLowerCase();
-      const threatKeywords = ["malware", "virus", "trojan", "phishing", "exploit", "hack", "breach", "attack", "ransomware", "botnet"];
-      const suspiciousPatterns = ["download.exe", "click here", "urgent action", "verify account", "suspended", "bitcoin", "cryptocurrency"];
-      const urls = query.match(/https?:\/\/[^\s]+/g) || [];
-      const emails = query.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
-      
-      const foundThreatKeywords = threatKeywords.filter(keyword => lowerQuery.includes(keyword));
-      const foundSuspiciousPatterns = suspiciousPatterns.filter(pattern => lowerQuery.includes(pattern));
-      const hasSuspiciousUrls = urls.some(url => url.includes("bit.ly") || url.includes("tinyurl") || url.length > 50);
-      const hasSuspiciousEmails = emails.some(email => email.includes("noreply") || email.includes("admin"));
-      
-      const isThreat = foundThreatKeywords.length > 0 || foundSuspiciousPatterns.length > 0 || hasSuspiciousUrls || hasSuspiciousEmails;
-      
-      let threatTypes: string[] = [];
-      let detectedIndicators: string[] = [];
-      let riskLevel: "low" | "medium" | "high" | "critical" = "low";
-      
-      if (foundThreatKeywords.length > 0) {
-        threatTypes.push("Malicious Keywords");
-        detectedIndicators.push(...foundThreatKeywords.map(k => `Threat keyword: "${k}"`));
-      }
-      
-      if (foundSuspiciousPatterns.length > 0) {
-        threatTypes.push("Suspicious Patterns");
-        detectedIndicators.push(...foundSuspiciousPatterns.map(p => `Suspicious pattern: "${p}"`));
-      }
-      
-      if (hasSuspiciousUrls) {
-        threatTypes.push("Suspicious URLs");
-        detectedIndicators.push(...urls.filter(url => url.includes("bit.ly") || url.includes("tinyurl") || url.length > 50));
-      }
-      
-      if (hasSuspiciousEmails) {
-        threatTypes.push("Suspicious Email Addresses");
-        detectedIndicators.push(...emails.filter(email => email.includes("noreply") || email.includes("admin")));
-      }
-      
-      // Determine risk level
-      if (foundThreatKeywords.length >= 2 || foundSuspiciousPatterns.length >= 2) {
-        riskLevel = "critical";
-      } else if (foundThreatKeywords.length > 0 || foundSuspiciousPatterns.length > 0 || hasSuspiciousUrls) {
-        riskLevel = "high";
-      } else if (hasSuspiciousEmails || threatTypes.length > 0) {
-        riskLevel = "medium";
-      }
-      
-      const confidence = isThreat ? 
-        Math.min(95, 60 + (foundThreatKeywords.length * 10) + (foundSuspiciousPatterns.length * 8) + (hasSuspiciousUrls ? 15 : 0)) :
-        Math.max(85, 95 - (urls.length * 2) - (emails.length * 1));
-      
-      const mockAnalysis = {
-        isThreat,
-        confidence,
-        threatTypes,
-        riskLevel,
-        scanTime: (1.5 + Math.random() * 2).toFixed(2) + " seconds",
-        explanation: isThreat ? 
-          `Analysis indicates this content contains ${threatTypes.length} type(s) of security threats. The detected patterns match known malicious indicators and should be treated with extreme caution. ${foundThreatKeywords.length > 0 ? 'Known threat keywords were identified. ' : ''}${foundSuspiciousPatterns.length > 0 ? 'Suspicious patterns commonly used in cyber attacks were found. ' : ''}${hasSuspiciousUrls ? 'Potentially malicious URLs detected. ' : ''}This content poses a ${riskLevel} risk to your security.` :
-          `Analysis indicates this content appears to be safe with no immediate security threats detected. However, ${urls.length > 0 ? `${urls.length} URL(s) were found - always verify links before clicking. ` : ''}${emails.length > 0 ? `${emails.length} email address(es) were found - be cautious with unsolicited communications. ` : ''}Continue to exercise standard security precautions when interacting with any online content.`,
-        detectedIndicators,
-        recommendations: isThreat ? [
-          "Do not interact with any links or attachments in this content",
-          "Report this content to your IT security team immediately",
-          "Run a full system scan if you've already interacted with this content",
-          "Block the sender if this came via email or message",
-          "Document this incident for security awareness training"
-        ] : [
-          "Continue following standard security best practices",
-          "Verify the legitimacy of any links before clicking",
-          "Be cautious with personal information sharing",
-          "Keep your security software updated",
-          "Report any suspicious activity to relevant authorities"
-        ]
-      };
-      
-      setAnalysis(mockAnalysis);
-      setIsAnalyzing(false);
-      setProgress(0);
-      
-      toast({
-        title: "Analysis Complete",
-        description: `Threat ${isThreat ? 'detected' : 'not detected'} (${confidence}% confidence)`,
-        variant: isThreat ? "destructive" : "default"
-      });
-    }, 2500);
+    if (lowerInput.includes("vpn")) {
+      return "VPNs create encrypted tunnels for your internet traffic. Choose VPNs with: no-logs policies, strong encryption (AES-256), kill switches, DNS leak protection, and servers in your desired locations. Avoid free VPNs as they often monetize your data. Popular options include ExpressVPN, NordVPN, and Surfshark. Use VPNs on public Wi-Fi, for privacy, and to bypass geo-restrictions. Do you need help choosing a VPN service?";
+    }
+    
+    if (lowerInput.includes("backup")) {
+      return "The 3-2-1 backup rule is essential: 3 copies of important data, 2 different storage media, 1 offsite backup. Automate backups when possible. Test restore procedures regularly. Consider cloud services (encrypted), external drives, and network-attached storage. Protect backups from ransomware with offline storage and versioning. What type of data are you looking to backup?";
+    }
+    
+    if (lowerInput.includes("social engineering")) {
+      return "Social engineering exploits human psychology rather than technical vulnerabilities. Common tactics include pretexting (creating false scenarios), baiting (offering something enticing), quid pro quo (false favors), and tailgating (following authorized personnel). Defense strategies: verify identities through official channels, be skeptical of unsolicited contact, never share sensitive information, and train yourself to recognize manipulation tactics. What social engineering scenario concerns you?";
+    }
+    
+    return "That's an excellent cybersecurity question! Based on current threat landscapes and security best practices, I recommend taking a multi-layered approach to security. This includes keeping software updated, using strong authentication, implementing network segmentation, maintaining regular backups, and staying informed about emerging threats. Could you provide more specific details about your security concern so I can give you more targeted advice?";
   };
-  
-  const getRiskLevelBadge = (level: string) => {
-    switch (level) {
-      case "critical":
-        return <Badge className="bg-red-600 hover:bg-red-700 text-white">{level}</Badge>;
-      case "high":
-        return <Badge className="bg-red-500 hover:bg-red-600 text-white">{level}</Badge>;
-      case "medium":
-        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white">{level}</Badge>;
-      case "low":
-        return <Badge variant="outline" className="text-green-600 border-green-600">{level}</Badge>;
-      default:
-        return <Badge variant="outline">{level}</Badge>;
+
+  const handleQuizAnswer = (answerIndex: number) => {
+    const newAnswers = [...selectedAnswers];
+    newAnswers[currentQuestion] = answerIndex;
+    setSelectedAnswers(newAnswers);
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestion < quizQuestions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1);
+    } else {
+      setShowResults(true);
     }
   };
 
-  const generateReport = () => {
-    if (!analysis) return;
-    
-    const reportData = {
-      timestamp: new Date().toISOString(),
-      query: query,
-      analysis: analysis,
-      assessmentType: "ChatGPT Threat Analysis"
-    };
-    
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `security-assessment-${Date.now()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: "Report Downloaded",
-      description: "Security assessment report has been saved to your device"
-    });
+  const calculateScore = () => {
+    return selectedAnswers.reduce((score, answer, index) => {
+      return score + (answer === quizQuestions[index].correctAnswer ? 1 : 0);
+    }, 0);
+  };
+
+  const resetQuiz = () => {
+    setCurrentQuestion(0);
+    setSelectedAnswers([]);
+    setShowResults(false);
+    setQuizStarted(false);
   };
 
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
-        <div className="py-16 bg-cyber-blue/5">
+        <div className="py-16 bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-cyan-900/20">
           <div className="container px-4 sm:px-6">
             <div className="max-w-4xl mx-auto mb-10">
               <div className="flex items-center gap-3 mb-4">
-                <Shield className="h-8 w-8 text-cyber-teal" />
-                <h1 className="text-4xl font-bold tracking-tight">Security Assessments</h1>
+                <Shield className="h-8 w-8 text-purple-600" />
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  AI Security Assistant & Knowledge Quiz
+                </h1>
               </div>
               <p className="text-lg text-muted-foreground">
-                Test your cybersecurity knowledge and analyse content for potential threats using advanced threat detection.
+                Get expert cybersecurity guidance from our advanced AI assistant and test your knowledge with our comprehensive security quiz.
               </p>
             </div>
 
             <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2 mb-12">
-              <Card className={`cursor-pointer transition-all hover:shadow-lg ${assessmentType === "threat-analysis" ? "ring-2 ring-cyber-teal" : ""}`}
-                    onClick={() => setAssessmentType("threat-analysis")}>
+              <Card className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${activeTab === "ai-chat" ? "ring-2 ring-purple-500 shadow-lg" : ""}`}
+                    onClick={() => setActiveTab("ai-chat")}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="bg-red-100 dark:bg-red-900/30 rounded-full p-2">
-                      <Eye className="h-6 w-6 text-red-600" />
+                    <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-full p-2">
+                      <Bot className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <CardTitle>ChatGPT Threat Analysis</CardTitle>
-                      <CardDescription>Analyse content for security threats and malicious indicators</CardDescription>
+                      <CardTitle className="text-purple-700 dark:text-purple-300">Advanced AI Assistant</CardTitle>
+                      <CardDescription>Get expert cybersecurity guidance and threat analysis</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
               </Card>
 
-              <Card className={`cursor-pointer transition-all hover:shadow-lg ${assessmentType === "knowledge-test" ? "ring-2 ring-cyber-teal" : ""}`}
-                    onClick={() => setAssessmentType("knowledge-test")}>
+              <Card className={`cursor-pointer transition-all hover:shadow-lg hover:scale-105 ${activeTab === "quiz" ? "ring-2 ring-blue-500 shadow-lg" : ""}`}
+                    onClick={() => setActiveTab("quiz")}>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full p-2">
-                      <Brain className="h-6 w-6 text-blue-600" />
+                    <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full p-2">
+                      <Brain className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <CardTitle>Knowledge Assessment</CardTitle>
-                      <CardDescription>Test your understanding of cybersecurity concepts</CardDescription>
+                      <CardTitle className="text-blue-700 dark:text-blue-300">Security Knowledge Quiz</CardTitle>
+                      <CardDescription>Test your cybersecurity knowledge with 10 questions</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
               </Card>
             </div>
 
-            {assessmentType === "threat-analysis" && (
-              <Card className="max-w-4xl mx-auto">
-                <CardHeader>
+            {activeTab === "ai-chat" && (
+              <Card className="max-w-4xl mx-auto shadow-xl border-0 bg-gradient-to-br from-white to-purple-50 dark:from-gray-900 dark:to-purple-900/20">
+                <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5 text-red-600" />
-                    ChatGPT Threat Analysis
+                    <Bot className="h-5 w-5" />
+                    Advanced Cybersecurity AI Assistant
                   </CardTitle>
-                  <CardDescription>
-                    Paste suspicious content, URLs, emails, or text to analyse for potential security threats
+                  <CardDescription className="text-purple-100">
+                    Ask anything about cybersecurity, threats, best practices, or get personalized security advice
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <form onSubmit={handleThreatAnalysis} className="space-y-4">
-                    <div className="flex flex-col space-y-2">
+                <CardContent className="p-6">
+                  <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                    {chatMessages.map((message) => (
+                      <div key={message.id} className={`flex gap-3 ${message.isUser ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`flex gap-3 max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${message.isUser ? 'bg-blue-500' : 'bg-purple-500'}`}>
+                            {message.isUser ? <User className="h-4 w-4 text-white" /> : <Bot className="h-4 w-4 text-white" />}
+                          </div>
+                          <div className={`p-3 rounded-lg ${message.isUser ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                            <p className="text-sm">{message.text}</p>
+                            <span className="text-xs opacity-70 mt-1 block">
+                              {message.timestamp.toLocaleTimeString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {isThinking && (
+                      <div className="flex gap-3 justify-start">
+                        <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                          <Bot className="h-4 w-4 text-white" />
+                        </div>
+                        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                            <span className="text-sm">AI is analyzing your question...</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <form onSubmit={handleChatSubmit} className="space-y-4">
+                    <div className="flex gap-2">
                       <Textarea
-                        placeholder="Paste content here to analyse for threats (emails, URLs, suspicious text, etc.)..."
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        className="min-h-[120px]"
+                        placeholder="Ask me about cybersecurity threats, best practices, incident response, or any security concerns..."
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        className="min-h-[60px] flex-1"
+                        disabled={isThinking}
                       />
-                    </div>
-                    <div className="flex justify-end">
                       <Button 
                         type="submit" 
-                        className="bg-red-600 hover:bg-red-700"
-                        disabled={isAnalyzing}
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6"
+                        disabled={isThinking || !chatInput.trim()}
                       >
-                        {isAnalyzing ? (
-                          <>
-                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                            Analysing Threats...
-                          </>
-                        ) : (
-                          <>
-                            <Search className="mr-2 h-4 w-4" />
-                            Analyse for Threats
-                          </>
-                        )}
+                        <MessageSquare className="h-4 w-4" />
                       </Button>
                     </div>
                   </form>
-                  
-                  {isAnalyzing && (
-                    <div className="mt-6 space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>ChatGPT threat analysis in progress...</span>
-                        <span>{Math.round(progress)}%</span>
-                      </div>
-                      <Progress value={progress} className="h-2" />
-                      <p className="text-xs text-muted-foreground">
-                        Scanning for malicious patterns, suspicious URLs, and threat indicators...
-                      </p>
-                    </div>
-                  )}
-                  
-                  {analysis && !isAnalyzing && (
-                    <div className="mt-8 border-t pt-6">
-                      <div className="flex items-center justify-between gap-2 mb-6">
-                        <div className="flex items-center gap-3">
-                          <div className={`rounded-full p-2 ${analysis.isThreat ? 'bg-red-100 dark:bg-red-900/30' : 'bg-green-100 dark:bg-green-900/30'}`}>
-                            {analysis.isThreat ? 
-                              <XCircle className="h-6 w-6 text-red-600" /> : 
-                              <CheckCircle2 className="h-6 w-6 text-green-600" />
-                            }
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold">
-                              {analysis.isThreat ? "⚠️ Threat Detected" : "✅ No Threats Detected"}
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                              {getRiskLevelBadge(analysis.riskLevel)}
-                              <span className="text-sm text-muted-foreground">
-                                {analysis.confidence}% confidence
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={generateReport}>
-                          <Download className="h-3 w-3 mr-1" />
-                          Download Report
-                        </Button>
-                      </div>
-                      
-                      <div className="grid md:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-secondary/50 rounded-lg p-4">
-                          <div className="text-sm text-muted-foreground">Confidence Level</div>
-                          <div className="text-xl font-semibold">{analysis.confidence}%</div>
-                        </div>
-                        <div className="bg-secondary/50 rounded-lg p-4">
-                          <div className="text-sm text-muted-foreground">Scan Time</div>
-                          <div className="text-xl font-semibold">{analysis.scanTime}</div>
-                        </div>
-                        <div className="bg-secondary/50 rounded-lg p-4">
-                          <div className="text-sm text-muted-foreground">Threat Types</div>
-                          <div className="text-xl font-semibold">{analysis.threatTypes.length}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-6">
-                        <div>
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <AlertCircle className="h-4 w-4 text-blue-500" />
-                            Analysis Explanation:
-                          </h4>
-                          <p className="text-sm bg-secondary/30 p-4 rounded-lg">{analysis.explanation}</p>
-                        </div>
-                        
-                        {analysis.threatTypes.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold mb-2 flex items-center gap-2">
-                              <Target className="h-4 w-4 text-red-500" />
-                              Detected Threat Types:
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {analysis.threatTypes.map((type, index) => (
-                                <Badge key={index} variant="destructive">{type}</Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {analysis.detectedIndicators.length > 0 && (
-                          <div>
-                            <h4 className="font-semibold mb-2 flex items-center gap-2">
-                              <AlertTriangle className="h-4 w-4 text-amber-500" />
-                              Specific Threat Indicators Found:
-                            </h4>
-                            <ul className="space-y-1">
-                              {analysis.detectedIndicators.map((indicator, index) => (
-                                <li key={index} className="text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded border-l-4 border-red-500">
-                                  <code className="text-red-700 dark:text-red-300">{indicator}</code>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        <div>
-                          <h4 className="font-semibold mb-2 flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            Security Recommendations:
-                          </h4>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {analysis.recommendations.map((recommendation, index) => (
-                              <li key={index} className="text-sm">{recommendation}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             )}
 
-            {assessmentType === "knowledge-test" && (
-              <Card className="max-w-4xl mx-auto">
-                <CardHeader>
+            {activeTab === "quiz" && (
+              <Card className="max-w-4xl mx-auto shadow-xl border-0 bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-blue-900/20">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-t-lg">
                   <CardTitle className="flex items-center gap-2">
-                    <Brain className="h-5 w-5 text-blue-600" />
-                    Cybersecurity Knowledge Assessment
+                    <Brain className="h-5 w-5" />
+                    Cybersecurity Knowledge Quiz
                   </CardTitle>
-                  <CardDescription>
-                    Test your understanding of cybersecurity concepts with interactive assessments
+                  <CardDescription className="text-blue-100">
+                    Test your understanding of cybersecurity fundamentals with 10 comprehensive questions
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-center py-12">
-                    <Brain className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Knowledge Assessment Coming Soon</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Interactive cybersecurity knowledge tests and assessments will be available here.
-                      For now, use the ChatGPT Threat Analysis to test threat detection skills.
-                    </p>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setAssessmentType("threat-analysis")}
-                    >
-                      Try Threat Analysis Instead
-                    </Button>
-                  </div>
+                <CardContent className="p-6">
+                  {!quizStarted ? (
+                    <div className="text-center py-12">
+                      <Brain className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+                      <h3 className="text-2xl font-semibold mb-4 text-blue-700 dark:text-blue-300">Ready to Test Your Knowledge?</h3>
+                      <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+                        This quiz covers essential cybersecurity topics including passwords, phishing, malware, 
+                        social engineering, and security best practices. You'll receive detailed explanations for each answer.
+                      </p>
+                      <Button 
+                        onClick={() => setQuizStarted(true)}
+                        className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-lg px-8 py-3 h-auto"
+                      >
+                        Start Quiz
+                      </Button>
+                    </div>
+                  ) : !showResults ? (
+                    <div>
+                      <div className="mb-6">
+                        <div className="flex justify-between items-center mb-4">
+                          <Badge variant="outline" className="text-blue-600 border-blue-600">
+                            Question {currentQuestion + 1} of {quizQuestions.length}
+                          </Badge>
+                          <div className="text-sm text-muted-foreground">
+                            {Math.round(((currentQuestion + 1) / quizQuestions.length) * 100)}% Complete
+                          </div>
+                        </div>
+                        <Progress value={((currentQuestion + 1) / quizQuestions.length) * 100} className="h-2" />
+                      </div>
+
+                      <div className="space-y-6">
+                        <h3 className="text-xl font-semibold">{quizQuestions[currentQuestion].question}</h3>
+                        
+                        <div className="space-y-3">
+                          {quizQuestions[currentQuestion].options.map((option, index) => (
+                            <button
+                              key={index}
+                              onClick={() => handleQuizAnswer(index)}
+                              className={`w-full p-4 text-left rounded-lg border-2 transition-all hover:shadow-md ${
+                                selectedAnswers[currentQuestion] === index
+                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                  : 'border-gray-200 hover:border-blue-300'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                  selectedAnswers[currentQuestion] === index
+                                    ? 'border-blue-500 bg-blue-500 text-white'
+                                    : 'border-gray-300'
+                                }`}>
+                                  {selectedAnswers[currentQuestion] === index && (
+                                    <CheckCircle2 className="h-4 w-4" />
+                                  )}
+                                </div>
+                                <span className="font-medium">{option}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button
+                            onClick={nextQuestion}
+                            disabled={selectedAnswers[currentQuestion] === undefined}
+                            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                          >
+                            {currentQuestion === quizQuestions.length - 1 ? 'Finish Quiz' : 'Next Question'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="mb-6">
+                        <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center ${
+                          calculateScore() >= 7 ? 'bg-green-500' : calculateScore() >= 5 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}>
+                          <span className="text-2xl font-bold text-white">{calculateScore()}/10</span>
+                        </div>
+                        <h3 className="text-2xl font-semibold mb-2">
+                          {calculateScore() >= 7 ? 'Excellent!' : calculateScore() >= 5 ? 'Good effort!' : 'Keep learning!'}
+                        </h3>
+                        <p className="text-muted-foreground">
+                          You scored {calculateScore()} out of {quizQuestions.length} questions correctly.
+                        </p>
+                      </div>
+
+                      <div className="space-y-4 text-left max-h-64 overflow-y-auto mb-6">
+                        {quizQuestions.map((question, index) => (
+                          <div key={index} className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800">
+                            <div className="flex items-start gap-2 mb-2">
+                              {selectedAnswers[index] === question.correctAnswer ? (
+                                <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                              ) : (
+                                <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
+                              )}
+                              <div>
+                                <p className="font-medium text-sm">{question.question}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{question.explanation}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-4 justify-center">
+                        <Button onClick={resetQuiz} variant="outline">
+                          Take Quiz Again
+                        </Button>
+                        <Button asChild className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700">
+                          <Link to="/resources">
+                            Learn More
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
