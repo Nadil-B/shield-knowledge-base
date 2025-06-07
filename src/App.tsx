@@ -11,6 +11,7 @@ import SecuritySolutions from "./pages/SecuritySolutions";
 import Advisories from "./pages/Advisories";
 import Resources from "./pages/Resources";
 import SecurityAssessments from "./pages/SecurityAssessments";
+import VulnerabilityScanner from "./pages/VulnerabilityScanner";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/advisories" element={<Advisories />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/security-assessments" element={<SecurityAssessments />} />
+          <Route path="/vulnerability-scanner" element={<VulnerabilityScanner />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

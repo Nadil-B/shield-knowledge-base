@@ -21,13 +21,13 @@ export default function HeroSection() {
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
-            Stay informed with the latest cybersecurity threats, vulnerabilities, and best practices to protect your digital assets with our AI-powered platform.
+            Advanced cybersecurity platform with vulnerability scanning, threat intelligence, and AI-powered security assessments to protect your digital infrastructure.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4">
             <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg" asChild>
-              <Link to="/threat-intelligence">
-                Explore Threat Intelligence
+              <Link to="/vulnerability-scanner">
+                Vulnerability Scanner
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
