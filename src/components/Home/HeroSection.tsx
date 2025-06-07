@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Lock, Shield, ShieldAlert, TrendingUp, Globe, Activity, Zap } from "lucide-react";
+import { ChevronRight, Lock, Shield, ShieldAlert, TrendingUp, Globe, Activity, Zap, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function HeroSection() {
