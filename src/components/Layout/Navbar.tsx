@@ -11,7 +11,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { Menu, X, Shield, Brain } from "lucide-react";
+import { Menu, X, Shield, Brain, BookOpen } from "lucide-react";
 
 const threatItems = [
   {
@@ -134,14 +134,22 @@ export default function Navbar() {
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavigationMenuLink asChild>
+                  <Link to="/security-quiz" className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Quiz
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
           
           <div className="flex items-center">
             <Button className="bg-cyber-teal hover:bg-cyber-teal/90" asChild>
-              <Link to="/threat-detector">
+              <Link to="/cyber-ai">
                 <Brain className="h-4 w-4 mr-2" />
-                AI Threat Detector
+                AI Assistant
               </Link>
             </Button>
           </div>
